@@ -4,9 +4,11 @@
 
 ## 来源与说明
 
-- 本项目基于本地目录中的 `wechat-mp-monitor` 资源整理
+- 本项目基于开源项目 [wechat-article-exporter](https://github.com/wechat-article/wechat-article-exporter) 的思路和本地资源整理
+- 文档参考 [MPText 文档](https://docs.mptext.top/)
 - 参考了同目录下的 `xyb-wechat-article-generator` 公众号排版模板
 - 页面样式采用 xyb 风格资源，公众号版输出采用 inline HTML 结构
+- 感谢开发者的 ❤️ 开源
 
 ## 合规使用提醒
 
