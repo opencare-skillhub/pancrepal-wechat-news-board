@@ -1,0 +1,7 @@
+interface:
+  display_name: "WeChat MP Monitor"
+  short_description: "Monitor WeChat updates and clean exports for RAG"
+  default_prompt: "Use $wechat-mp-monitor to monitor公众号更新, generate a dashboard, and clean exported articles for RAG ingestion."
+
+policy:
+  allow_implicit_invocation: true
