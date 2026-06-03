@@ -9,6 +9,7 @@
 - 参考了同目录下的 `xyb-wechat-article-generator` 公众号排版模板
 - 页面样式采用 xyb 风格资源，公众号版输出采用 inline HTML 结构
 - 感谢开发者的 ❤️ 开源
+- `xyb-wechat-article-generator` 在当前仓库中仅作为独立参考资源，不并入主仓库发布
 
 ## 合规使用提醒
 
@@ -50,3 +51,14 @@ python3 wechat-mp-monitor/scripts/mp-monitor.py --dashboard
 - `~/Downloads/wechat-monitor/cache/mp-dashboard.html`
 - `~/Downloads/wechat-monitor/cache/mp-article.html`
 - `~/Downloads/wechat-monitor/state/mp-monitor.json`
+
+## 后续 PR 邀请
+
+欢迎开发者 fork、贡献和发布，一起把这个方向做成可复用的公益工具。
+
+- 自动化发布
+- 多癌种复制与再开源：乳腺癌、肺癌、肠癌、淋巴瘤、妇科癌症等
+- 罕见病场景也欢迎扩展
+- 欢迎围绕公众号监控、内容筛选、RAG 清洗、公众号版 HTML 输出继续贡献
+
+我们希望更多开发者加入 fork / PR / 发布流程，持续造福患者与家属。

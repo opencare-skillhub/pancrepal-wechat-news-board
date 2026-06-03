@@ -3,3 +3,4 @@ cache/
 state/
 scripts/__pycache__/
 *.pyc
+xyb-wechat-article-generator/
