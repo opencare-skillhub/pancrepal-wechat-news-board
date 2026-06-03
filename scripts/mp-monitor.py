@@ -36,6 +36,88 @@ DEFAULT_SEARCH_KEYWORDS = [
     "NCCN",
     "NCT胰腺癌",
 ]
+DEFAULT_PANCREATIC_PATTERNS = [
+    "胰腺癌",
+    "pancreatic cancer",
+    r"\bpdac\b",
+]
+DEFAULT_PANCREATIC_ACCOUNT_PATTERNS = [
+    "胰腺",
+    "胰友",
+    "pancreas",
+]
+DEFAULT_ONCOLOGY_PATTERNS = [
+    "肿瘤",
+    "癌症",
+    "癌",
+    "oncology",
+    "tumor",
+    "neoplasm",
+    "抗肿瘤",
+    "恶性肿瘤",
+    "肿瘤学",
+]
+DEFAULT_TRIAL_PATTERNS = [
+    "临床试验",
+    "招募",
+    "受试者",
+    "研究启动",
+    "入组",
+    "试验",
+    "NCT",
+]
+DEFAULT_NEW_DRUG_PATTERNS = [
+    "新药",
+    "新治疗",
+    "新方案",
+    "治疗方案",
+    "疗法",
+    "联合",
+    "靶向",
+    "免疫",
+    "口服",
+    "注射",
+    "药物",
+    "抑制剂",
+    "单抗",
+    "ADC",
+]
+DEFAULT_NEGATIVE_PATTERNS = [
+    "致敬",
+    "节日",
+    "活动",
+    "科普知识",
+    "周报",
+    "速递",
+    "周刊",
+    "盘点",
+    "年度总结",
+    "生活",
+    "随笔",
+    "反思",
+    "祝福",
+    "纪念",
+    "公益",
+    "招生",
+    "养生",
+    "保健",
+    "减肥",
+    "情绪",
+    "饮食",
+    "美容",
+    "前列腺",
+    "乳腺",
+    "肺癌",
+    "肝癌",
+    "胃癌",
+    "结直肠",
+    "卵巢",
+    "宫颈",
+    "头颈",
+    "黑色素瘤",
+    "血液肿瘤",
+    "脑胶质",
+]
 DEFAULT_PRIORITY_KEYWORDS = [
     "临床试验",
     "招募",
@@ -209,46 +291,116 @@ def _split_keywords(value: str) -> list[str]:
 
 PANCREATIC_PATTERNS = _split_keywords(os.getenv(
     "MP_PANCREATIC_PATTERNS",
-    "胰腺癌,pancreatic cancer,\\bpdac\\b,胰腺肿瘤,胰腺导管,胰腺,mtap",
+    ",".join(DEFAULT_PANCREATIC_PATTERNS),
+))
+PANCREATIC_ACCOUNT_PATTERNS = _split_keywords(os.getenv(
+    "MP_PANCREATIC_ACCOUNT_PATTERNS",
+    ",".join(DEFAULT_PANCREATIC_ACCOUNT_PATTERNS),
+))
+ONCOLOGY_PATTERNS = _split_keywords(os.getenv(
+    "MP_ONCOLOGY_PATTERNS",
+    ",".join(DEFAULT_ONCOLOGY_PATTERNS),
 ))
 TRIAL_PATTERNS = _split_keywords(os.getenv(
     "MP_TRIAL_PATTERNS",
-    "临床试验,招募,受试者,研究启动,入组,试验",
+    ",".join(DEFAULT_TRIAL_PATTERNS),
 ))
 NEW_DRUG_PATTERNS = _split_keywords(os.getenv(
     "MP_NEW_DRUG_PATTERNS",
-    "新药,新治疗,新方案,治疗方案,疗法,联合,靶向,免疫,口服,注射,药物,抑制剂,单抗,ADC",
+    ",".join(DEFAULT_NEW_DRUG_PATTERNS),
 ))
 NEGATIVE_PATTERNS = _split_keywords(os.getenv(
     "MP_NEGATIVE_PATTERNS",
-    "致敬,节日,活动,科普知识,周报,速递,周刊,盘点,年度总结,生活,随笔,反思,祝福,纪念,公益,招生",
+    ",".join(DEFAULT_NEGATIVE_PATTERNS),
 ))
 
 def _match_any(patterns, text):
     text = text or ""
     return any(re.search(pattern, text, re.I) for pattern in patterns)
 
+
+def _has_exact_pattern(patterns, text):
+    text = text or ""
+    return any(re.search(pattern, text, re.I) for pattern in patterns if pattern)
+
+
+def _has_other_cancer_signal(text):
+    other_cancer_patterns = [
+        "前列腺",
+        "乳腺",
+        "肺癌",
+        "肝癌",
+        "胃癌",
+        "结直肠",
+        "肠癌",
+        "直肠癌",
+        "卵巢",
+        "宫颈",
+        "子宫",
+        "头颈",
+        "食管",
+        "黑色素瘤",
+        "血液肿瘤",
+        "淋巴瘤",
+        "白血病",
+        "脑胶质",
+        "肉瘤",
+        "胆管癌",
+        "膀胱癌",
+        "食管",
+        "鼻咽",
+    ]
+    return _match_any(other_cancer_patterns, text)
+
+
+def _relevance_gate(title, account_name=""):
+    text = f"{account_name} {title}".strip()
+    if not text:
+        return False
+    if _has_exact_pattern(PANCREATIC_PATTERNS, text):
+        return True
+    if _has_exact_pattern(ONCOLOGY_PATTERNS, text):
+        return True
+    if _has_exact_pattern(PANCREATIC_ACCOUNT_PATTERNS, account_name) and _match_any(
+        ["胰腺癌", "pancreatic cancer", r"\bpdac\b", "肿瘤", "癌症", "癌"],
+        title,
+    ):
+        return True
+    return False
+
 def score_article(title, account_name=""):
     text = f"{account_name} {title}".strip()
-    if not _match_any(PANCREATIC_PATTERNS, text):
+    if not _relevance_gate(title, account_name):
         return -999
     score = 0
+    if _match_any([r"临床试验", r"招募", r"受试者", r"入组", r"nct"], text):
+        score += 90
     if _match_any(TRIAL_PATTERNS, text):
         score += 70
     if _match_any([r"胰腺癌", r"pancreatic cancer", r"\bpdac\b"], text):
         score += 60
-    if _match_any([r"胰腺肿瘤"], text):
-        score += 30
-    if _match_any([r"胰腺"], text):
-        score += 10
-    if _match_any([r"ras", r"kras", r"her2"], text):
-        score += 12
-    if _match_any([r"招募", r"受试者", r"入组"], text):
+    if _match_any([r"肿瘤", r"癌症", r"恶性肿瘤", r"oncology", r"tumor"], text):
+        score += 35
+    if _match_any([r"panras", r"pankras", r"kras g12", r"kras q61", r"kras g13"], text):
+        score += 18
+    if _match_any([r"招募", r"受试者", r"入组", r"入组中"], text):
         score += 30
     if _match_any(NEW_DRUG_PATTERNS + PRIORITY_KEYWORDS, text):
         score += 20
+    if _match_any([r"asco", r"aacr", r"csco", r"nccn", r"nct"], text):
+        score += 12
     if _match_any(NEGATIVE_PATTERNS, text):
-        score -= 25
+        score -= 35
+    if _has_other_cancer_signal(text) and not _match_any([r"胰腺癌", r"pancreatic cancer", r"\bpdac\b"], text):
+        score -= 80
+    if _match_any([r"科普", r"解读", r"知识", r"养生", r"保健", r"生活"], text) and not _match_any(TRIAL_PATTERNS + NEW_DRUG_PATTERNS, text):
+        score -= 45
+    if _match_any([r"周报", r"周刊", r"速递", r"盘点", r"总结"], text) and not _match_any(TRIAL_PATTERNS, text):
+        score -= 30
+    if _match_any([r"新闻", r"资讯", r"动态"], text) and not _match_any(TRIAL_PATTERNS + NEW_DRUG_PATTERNS, text):
+        score -= 10
+    if _match_any([r"前列腺", r"乳腺", r"肺癌", r"肝癌", r"胃癌", r"结直肠", r"卵巢", r"宫颈"], text):
+        score -= 120
     return score
 
 def select_top_articles(accounts_data, limit=3):
@@ -265,9 +417,26 @@ def select_top_articles(accounts_data, limit=3):
             score = score_article(title, name)
             if score < 0:
                 continue
-            ranked.append((score, ts, a))
-        ranked.sort(key=lambda x: (-x[0], -x[1], x[2].get("title", "")))
-        picked = [item[2] for item in ranked[:limit]]
+            is_trial = 1 if _match_any(TRIAL_PATTERNS, f"{name} {title}") else 0
+            is_new_drug = 1 if _match_any(NEW_DRUG_PATTERNS + PRIORITY_KEYWORDS, f"{name} {title}") else 0
+            ranked.append((ts, is_trial, is_new_drug, score, a))
+        ranked.sort(key=lambda x: (-x[0], -x[1], -x[2], -x[3], x[4].get("title", "")))
+        if len(ranked) < limit:
+            fallback_ranked = []
+            for a in articles:
+                title = a.get("title", "")
+                ts = int(a.get("time", 0) or 0)
+                fallback_ranked.append((ts, a))
+            fallback_ranked.sort(key=lambda x: (-x[0], x[1].get("title", "")))
+            existing_titles = {item[4].get("title", "") for item in ranked}
+            for ts, a in fallback_ranked:
+                if len(ranked) >= limit:
+                    break
+                if a.get("title", "") in existing_titles:
+                    continue
+                ranked.append((ts, 0, 0, 0, a))
+            ranked.sort(key=lambda x: (-x[0], -x[1], -x[2], -x[3], x[4].get("title", "")))
+        picked = [item[4] for item in ranked[:limit]]
         selected[name] = picked
     return selected
 
