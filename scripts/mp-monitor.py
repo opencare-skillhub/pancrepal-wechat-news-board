@@ -13,7 +13,7 @@ from curl_cffi import requests
 #  用户配置区 — 只需要改这里
 # ============================================================
 
-DEFAULT_API_KEY = "272b9e0beae04f7fb27f7f26ae9dbb26"
+# 从 .env 读取 API_KEY，不再硬编码默认值
 DEFAULT_SEARCH_KEYWORDS = [
     "胰腺癌",
     "panRAS",
@@ -147,11 +147,16 @@ DEFAULT_PRIORITY_KEYWORDS = [
     "NCT胰腺癌",
 ]
 DEFAULT_ACCOUNTS = {
-    "恒瑞 On Call": "MzA4MDQ3NjM0MQ==",
+
     "胰友会": "Mzg4MTU4NDYxNA==",
+    "FUSCC 胰腺肿瘤综合治疗部": "Mzk4NDUzNDkxNQ==",
+    "医周科技": "MzU2OTc5NTU1OQ==",
+    "鹤医声": "Mzk3NTExNjgxMg==",    
+    "小胰宝助手": "MzA3MDkxODY2MA==",    
+    "恒瑞 On Call": "MzA4MDQ3NjM0MQ==",
+    "劲方医药GenFleet": "MzU5NTQ1MDk2Mw==",    
     "Medicina麦迪希那": "Mzg5ODg0MzUyMA==",
     "slope & share": "MzE5MTIxMDY5MQ==",
-    "劲方医药GenFleet": "MzU5NTQ1MDk2Mw==",
     "SXCHGCP": "Mzg3MDc2NzY0Ng==",
     "GCP小行家": "MzIyMjQ3NDgzMQ==",
     "福肿24区": "MzI4MjcwMTgxMA==",
@@ -159,8 +164,6 @@ DEFAULT_ACCOUNTS = {
     "北京高博医院": "Mzk0NDUzNzQ1MQ==",
     "西安交大二附院临床试验研究中心": "MzkxNDc1OTg4Mw==",
     "天津市肿瘤医院临床试验中心": "MzI3MTIxNTI0MA==",
-    "医周科技": "MzU2OTc5NTU1OQ==",
-    "鹤医声": "Mzk3NTExNjgxMg==",
     "长海医院胰腺肝胆外科": "MzAwNDUyNzAyMw==",
     "复旦大学附属华山医院胰腺外科": "Mzg5MDczMzc3NQ==",
     "安医二附院肿瘤中心": "MzU0MjE3Nzc4NA==",
@@ -170,8 +173,7 @@ DEFAULT_ACCOUNTS = {
     "张煜医生": "Mzg4NzUyNDY3NQ==",
     "丁香园肿瘤前沿": "MzIxMzExMzM4NA==",
     "丁香园肿瘤时间": "MjM5MzAwMjcyMA==",
-    "FUSCC 胰腺肿瘤综合治疗部": "Mzk4NDUzNDkxNQ==",
-    "小胰宝助手": "MzA3MDkxODY2MA==",
+    "港铁侠": "MjM5NDYyNTI2NA=="
 }
 
 def _load_dotenv(path: Path) -> None:
@@ -186,7 +188,7 @@ def _load_dotenv(path: Path) -> None:
 
 _load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-API_KEY = os.getenv("MP_API_KEY", DEFAULT_API_KEY)
+API_KEY = os.getenv("MP_API_KEY")
 SEARCH_KEYWORDS = [kw.strip() for kw in os.getenv(
     "MP_SEARCH_KEYWORDS",
     ",".join(DEFAULT_SEARCH_KEYWORDS),
